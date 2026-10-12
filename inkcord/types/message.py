@@ -21,9 +21,20 @@ class ChannelMention:
         self.guild_id: ResourceID = ResourceID(_data["guild_id"])
         self.name: str = _data["name"]
 
+class Reaction:
+    def __init__(self, _data: dict):
+        """A reaction emoji."""
+        self.count = _data["count"]
+        self.burst_reaction_count = _data["count_details"]["burst"]
+        self.reaction_count = _data["count_details"]["normal"]
+        self.me = _data["me"]
+        self.burst_reacted = _data["me_burst"]
+        self.emoji =
+
 
 class Message:
     def __init__(self, _data: dict):
+        """Represents a message."""
         self._dict = _data
 
     @property
