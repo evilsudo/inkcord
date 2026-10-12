@@ -1,14 +1,13 @@
-import typing
+import asyncio
 import functools
 import json
-import asyncio
+import typing
 
-if typing.TYPE_CHECKING:
-    from .shared_types import BitIntents
-    from .listener import EventListener
-    from .http_gateway import AsyncClient
-    from .slash_cmd import InteractionCommand
-    from .resourceid import ResourceID
+from .http_gateway import AsyncClient
+from .listener import EventListener
+from .resourceid import ResourceID
+from .shared_types import BitIntents
+from .slash_cmd import InteractionCommand
 
 
 class HttpClient:

@@ -1,14 +1,13 @@
+import functools
+import inspect
+import json
+import logging
+import re
 import typing
 from typing import Callable, Coroutine
-import functools
-import logging
-import inspect
-import re
-import json
 
-if typing.TYPE_CHECKING:
-    from .exceptions import HandleableException, GeneralException
-    from .shared_types import TYPEMAPS, FormatterThreading
+from .exceptions import GeneralException, HandleableException
+from .shared_types import TYPEMAPS, FormatterThreading
 
 logger = logging.getLogger("inkcord-slash")
 handler = logging.StreamHandler()

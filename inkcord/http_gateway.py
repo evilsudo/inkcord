@@ -8,28 +8,27 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import http.client as httcl
 import asyncio
-import typing
+import http.client as httcl
 import json
-import os
 import logging
-import websockets
+import os
 import platform
 import random
+import typing
 import urllib.parse
 
-if typing.TYPE_CHECKING:
-    from .shared_types import (
-        BitIntents,
-        RESUMABLE_CLOSE_CODES,
-        logger,
-        FormatterThreading,
-    )
-    from .listener import EventListener
-    from .exceptions import RequestException
-    from .inter import Interaction
+import websockets
 
+from .exceptions import RequestException
+from .inter import Interaction
+from .listener import EventListener
+from .shared_types import (
+    RESUMABLE_CLOSE_CODES,
+    BitIntents,
+    FormatterThreading,
+    logger,
+)
 
 handler = logging.StreamHandler()
 handler.setFormatter(

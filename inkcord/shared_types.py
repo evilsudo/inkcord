@@ -11,9 +11,9 @@ This file holds small class definitions that will clog up the main file they tak
 
 """
 
+import datetime
 import enum
 import logging
-import datetime
 
 
 class BitIntents(enum.IntEnum):
@@ -33,7 +33,7 @@ class BitIntents(enum.IntEnum):
     - `THREAD_MEMBER_UPDATE` and `THREAD_MEMBERS_UPDATE` \n
     - `STAGE_INSTANCE_CREATE/UPDATE/DELETE`"""
     GUILD_MEMBERS = 1 << 1
-    """!! PRIVILEGED INTENT !!\n 
+    """!! PRIVILEGED INTENT !!\n
     Adding this allows your bot to recieve: (or send) \n
     - `GUILD_MEMBER_ADD/UPDATE/REMOVE` \n
     - `THREAD_MEMBERS_UPDATE`
@@ -63,7 +63,7 @@ class BitIntents(enum.IntEnum):
     - `VOICE_CHANNEL_EFFECT_SEND` \n
     - `VOICE_STATE_UPDATE`"""
     GUILD_PRESENCES = 1 << 8
-    """!! PRIVILEGED INTENT !! 
+    """!! PRIVILEGED INTENT !!
     \n Adding this allows your bot to recieve/send this event: `PRESENCE_UPDATE`"""
     GUILD_MESSAGES = 1 << 9
     """Adding this allows your bot to recieve/send these events: \n

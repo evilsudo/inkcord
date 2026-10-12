@@ -1,4 +1,3 @@
-from typing import Any
 from .http_gateway import logger
 
 

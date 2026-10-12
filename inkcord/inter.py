@@ -1,14 +1,10 @@
 import typing as t
 from dataclasses import dataclass
-from typing import Self
+from types.channel import Channel
+from types.guild import Guild
+from types.guild_mem import GuildMember
 
-if t.TYPE_CHECKING:
-    from types.guild import Guild
-    from types.channel import Channel
-    from types.guild_mem import GuildMember
-    from .exceptions import InteractionFailed
-
-    # from types.message import Message
+from .exceptions import InteractionFailed
 
 
 @dataclass
