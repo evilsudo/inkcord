@@ -5,17 +5,14 @@ import PIL.Image
 import base64
 from typing import overload
 import datetime
-
-
-if typing.TYPE_CHECKING:
-    from ..resourceid import ResourceID
-    from permissions import Permissions
-    from .role import Role
-    from .emoji import Emoji
-    from ..shared_types import WelcomeScreen, Sticker
-    from .channel import Channel, VoiceChannel
-    from ..exceptions import ImproperUsage
-    from .guild_mem import GuildMember
+from ..resourceid import ResourceID
+from permissions import Permissions
+from .role import Role
+from .emoji import Emoji
+from ..shared_types import WelcomeScreen, Sticker
+from .channel import Channel, VoiceChannel
+from ..exceptions import ImproperUsage
+from .guild_mem import GuildMember
 
 
 class ThreadMember:

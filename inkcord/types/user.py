@@ -12,14 +12,12 @@ from typing import Any, List
 import json
 from PIL import Image
 import base64
-
-if typing.TYPE_CHECKING:
-    from ..resourceid import ResourceID
-    from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
-    from .guild import PartialGuild
-    from .guild_mem import GuildMember
-    from .channel import DMChannel
-    from ..exceptions import ImproperUsage
+from ..resourceid import ResourceID
+from .avatar import AvatarDecoration, Nameplate, PrimaryGuild
+from .guild import PartialGuild
+from .guild_mem import GuildMember
+from .channel import DMChannel
+from ..exceptions import ImproperUsage
 
 
 class User:

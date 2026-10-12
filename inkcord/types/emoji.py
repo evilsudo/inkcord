@@ -1,8 +1,6 @@
 import typing
-
-if typing.TYPE_CHECKING:
-    from ..resourceid import ResourceID
-    from .user import User
+from ..resourceid import ResourceID
+from .user import User
 
 
 class Emoji:

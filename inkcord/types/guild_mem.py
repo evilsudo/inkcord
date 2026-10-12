@@ -1,11 +1,8 @@
 # the user object can't be typehinted here because of circular imports :pensive:
-import typing
 import datetime
-
-if typing.TYPE_CHECKING:
-    from ..resourceid import ResourceID
-    from ..shared_types import AvatarDecoration
-    from .permissions import Permissions
+from ..resourceid import ResourceID
+from ..shared_types import AvatarDecoration
+from .permissions import Permissions
 
 
 class GuildMember:

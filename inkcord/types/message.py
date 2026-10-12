@@ -9,13 +9,10 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 import typing
 from datetime import datetime
-
-
-if typing.TYPE_CHECKING:
-    from ..resourceid import ResourceID
-    from .user import User
-    from .attach import Attachment
-    from .embed import Embed
+from ..resourceid import ResourceID
+from .user import User
+from .attach import Attachment
+from .embed import Embed
 
 
 class ChannelMention:

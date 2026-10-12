@@ -1,8 +1,6 @@
 import typing
 from typing import Callable
-
-if typing.TYPE_CHECKING:
-    from ..resourceid import ResourceID
+from ..resourceid import ResourceID
 
 
 class Permissions:
@@ -20,7 +18,7 @@ class Permissions:
         self.ban_members = False
         """This permission allows you to ban members from the guild. Not relevant to channels."""
         self.administrator = False
-        """WARNING: This permission automatically sets ALL permissions to True. 
+        """WARNING: This permission automatically sets ALL permissions to True.
         \n Allows you to bypass channel permission overwrites."""
         self.manage_channels = False
         """This permission allows you to edit and manage channels. Applies to Text, Voice, and Stage channels."""
