@@ -9,6 +9,9 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 """
 
 # TODO:
+# Make interaction object support more types
+# Translate parameter types into discord API language
+# Make listener parameters recieve the right type
 # Make member and other objects like that support being a parameter
 # Message object (working on)
 

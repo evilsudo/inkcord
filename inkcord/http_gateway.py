@@ -212,7 +212,6 @@ class AsyncClient:
         )
         gateway = await websockets.connect(self.gate_url)  # type: ignore
         self.gateway_conn = gateway
-        event_queue = []
         async for message in gateway:
             self.current_event = json.loads(message)
             serialized_data = json.loads(message)
@@ -231,35 +230,9 @@ class AsyncClient:
                 self.loop.run_forever()
                 self.loop.create_task(
                     self.send_heartbeat_forever(self.gateway_conn)
-                )  # this should work, hopefully it doesn't block
-                await gateway.send(
-                    message=json.dumps(
-                        {
-                            "op": 2,
-                            "d": {
-                                "token": self.token,
-                                "properties": {
-                                    "os": platform.platform(),
-                                    "browser": "inkcord",
-                                    "device": "inkcord",
-                                },
-                                "compress": False,
-                                "intents": self.intents,
-                            },
-                        }
-                    )
                 )
-                logger.info("Sent IDENTIFY packet. Waiting for response...")
-                if (
-                    serialized_data["op"] == 0
-                    and serialized_data["d"].get("v") == self.version
-                ):
-                    logger.info(
-                        f"Successfully connected to discord gateway with session id: {serialized_data["d"]["session_id"]}"
-                    )
-                    self.session_id = serialized_data["d"]["session_id"]
-                    self.resume_url = serialized_data["d"]["resume_gateway_url"]
-                    self.app_id = serialized_data["d"]["application"]["id"]
+                await self.send_identify_packet(gateway)
+                self.safely_connected(serialized_data)
                 logger.info(
                     "Gateway handshake is finished. Initiating normal operation."
                 )
@@ -268,37 +241,7 @@ class AsyncClient:
                         await asyncio.create_task(
                             coro=i.func(...)  # pyright: ignore[reportArgumentType]
                         )
-                if self.current_event["t"] == "INTERACTION_CREATE":
-                    for i in self.slash_cmds:
-                        # this is where we're gonna pass off the interaction event to the command
-                        if i.name == self.current_event["d"]["name"]:
-                            from types.channel import Channel
-                            from types.guild import Guild
-                            from types.guild_mem import GuildMember
-
-                            arg_data = {
-                                x["name"]: x["value"]
-                                for x in self.current_event["d"]["options"]
-                            }
-                            guild = Guild(self.current_event["d"]["guild"])
-                            channel = Channel(self.current_event["d"]["channel"])
-                            member = GuildMember(self.current_event["d"]["member"])
-                            # only gonna support builtin types for now
-                            await asyncio.create_task(
-                                coro=i.func(
-                                    Interaction(
-                                        channel,
-                                        member,
-                                        guild,
-                                        self.current_event["d"]["id"],
-                                        self.current_event["d"]["token"],
-                                        self,
-                                    ),
-                                    **arg_data,
-                                )
-                            )
-                            # here, we need some way to turn the parameter object straight into values that the slash command can use
-
+                await self.create_interaction() # already has logic if there is no active slash command.
             except websockets.exceptions.WebSocketException as e:
                     logger.error(
                         f"Encountered an exception when initiating handshake. (starting reconnect...) Error: {e.args}"
@@ -342,3 +285,63 @@ class AsyncClient:
         for method, data, route in self.pending_reqs:
             self.send_request(method, route, data)
             logger.info("Sending missed request....")
+
+    async def send_identify_packet(self,gateway):
+        await gateway.send(
+            message=json.dumps(
+                {
+                    "op": 2,
+                    "d": {
+                        "token": self.token,
+                        "properties": {
+                            "os": platform.platform(),
+                            "browser": "inkcord",
+                            "device": "inkcord",
+                        },
+                        "compress": False,
+                        "intents": self.intents,
+                    },
+                }
+            )
+        )
+        logger.info("Sent IDENTIFY packet. Waiting for response...")
+
+    async def create_interaction(self):
+        if self.current_event["t"] == "INTERACTION_CREATE":
+            for i in self.slash_cmds:
+                if i.name == self.current_event["d"]["name"]:
+                    from types.channel import Channel
+                    from types.guild import Guild
+                    from types.guild_mem import GuildMember
+
+                    arg_data = {
+                        x["name"]: x["value"]
+                        for x in self.current_event["d"]["options"]
+                    }
+                    guild = Guild(self.current_event["d"]["guild"])
+                    channel = Channel(self.current_event["d"]["channel"])
+                    member = GuildMember(self.current_event["d"]["member"])
+                    await asyncio.create_task(
+                        coro=i.func(
+                            Interaction(
+                                channel,
+                                member,
+                                guild,
+                                self.current_event["d"]["id"],
+                                self.current_event["d"]["token"],
+                                self,
+                            ),
+                            **arg_data,
+                        )
+                    )
+    def safely_connected(self,serialized_data):
+        if (
+            serialized_data["op"] == 0
+            and serialized_data["d"].get("v") == self.version
+        ):
+            logger.info(
+                f"Successfully connected to discord gateway with session id: {serialized_data['d']['session_id']}"
+            )
+            self.session_id = serialized_data["d"]["session_id"]
+            self.resume_url = serialized_data["d"]["resume_gateway_url"]
+            self.app_id = serialized_data["d"]["application"]["id"]
