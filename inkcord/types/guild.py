@@ -5,13 +5,48 @@ import PIL.Image
 import base64
 from typing import overload
 import datetime
+
+from inkcord.client import Client
 from ..resourceid import ResourceID
 from permissions import Permissions
 from .role import Role
 from .emoji import Emoji
-from ..shared_types import WelcomeScreen, Sticker
 from .channel import Channel, VoiceChannel
 from ..exceptions import ImproperUsage
+
+class Sticker:
+    def __init__(self, _data):
+        self.id: int = _data["id"]
+        """ID of sticker"""
+        self.pack_id: int | None = _data.get("pack_id")
+        """For builtin stickers, the ID of the pack this sticker is from."""
+        self.name: str = _data["name"]
+        """The name of the sticker."""
+        self.description: str = _data.get("description")
+        """Sticker description. May be None."""
+        self.tags = _data["tags"]
+        """Autocomplete/suggestion tags for the sticker."""
+        self.available: bool | None = _data.get("available")
+        """Whether this sticker can be used, can be False due to server boost level downgrading"""
+        self.guild_id: int | None = _data.get("guild_id")
+        """The guild where this guild id originated from"""
+        self.sort_value: int = _data.get("sort_value")
+        """This sticker's sort order within it's standard pack, if applicable"""
+
+
+
+class WelcomeScreenChannel:
+    def __init__(self, _data):
+        self.channel_id: int = _data["channel_id"]
+        self.description: str = _data["description"]
+
+
+class WelcomeScreen:
+    def __init__(self, _data):
+        self.desc = _data["description"]
+        self.welcome_screen_channels = [
+            WelcomeScreenChannel(data) for data in _data["welcome_channels"]
+        ]
 from .guild_mem import GuildMember
 
 
@@ -351,9 +386,9 @@ class Guild:
             The guild retrieved. (`inkcord.Guild`)
         """
         request = bot._CONN.send_request("GET", f"guilds/{id}", with_counts=with_counts)
-        result = self(
+        result = cls(
             json.loads(request.result().read())
-        )  # shut up python this is fine
+        )
         return result
 
     def modify_guild(
@@ -538,18 +573,18 @@ class Guild:
             thr_list.append((Channel(i), ThreadMember(r)))
         return thr_list
 
-    def get_guild_member(self, bot, id: ResourceID) -> GuildMember:
+    def get_guild_member(self, bot: Client, id: ResourceID) -> GuildMember:
         """Returns a guild member object by ID.
 
         Args:
-            bot (not typehinted, should be inkcord.Client): Your bot.
+            bot: Your bot.
             id (ResourceID): The ID of the guild member you want to retrieve.
 
         Returns:
             GuildMember: The returned guild member.
         """
         res = json.loads(
-            bot._CONN.send_request("GET", f"guilds/{self.id}/members/{id}")
+            bot._CONN.send_request("GET", f"guilds/{self.id}/members/{id}").msg.as_string()
         )
         gm = GuildMember(res)
         gm.guild = self

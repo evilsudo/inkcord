@@ -10,12 +10,6 @@ from .shared_types import BitIntents
 from .slash_cmd import InteractionCommand
 
 
-class HttpClient:
-    """A class for your discord bot that will ONLY use http interactions."""
-
-    pass
-
-
 class Client:
     """A class that uses http and websocket interactions. This class should be instantiated if you want your bot to run with the commands you attached to it. \n
     Example:
@@ -28,7 +22,7 @@ class Client:
     ```
     """
 
-    def __init__(self, intents: BitIntents, token: str, version: int = 10):
+    def __init__(self, intents: BitIntents, token: str, version: int = 10, gateway: bool = True):
         self.intents = intents
         self.current_interaction: dict = {}
         self.slash_cmds: list[InteractionCommand] = []
@@ -36,11 +30,9 @@ class Client:
         self._CONN = AsyncClient.setup(
             token, intents, version=10, gateway=True, event_listners=self.listeners
         )
-
         self.version = version
         self.prereqs = []
-
-        # this is the read only part that i described earlier
+        self.http = ... # implementing soon
 
     def listener(self, func: typing.Callable):
         """creates a listener for a specific event that's not handled by the library."""
@@ -94,24 +86,16 @@ class Client:
         This function takes no arguments, and shouldn't be ran excessively, since you can and will hit ratelimits if used unnecessarily. \n
         This function is recommended to be used in special setup functions, which can be made using the `.prereq` decorator.
 
-        """
-        connection = self._CONN.setup(self.token, self.intents, self.version, True, self.listeners)  # type: ignore
-        curr_synced = connection.send_request(
+        """  # type: ignore
+        curr_synced = self._CONN.send_request(
             "GET", f"applications/{self._CONN.app_id}/commands", None
         )
         synced = json.loads(curr_synced.result().read())  # type: ignore
         if len(synced) < len(self.slash_cmds):
             for cmd in self.slash_cmds:
-                if cmd not in synced:
-                    if cmd.private is None:  # type: ignore
-                        connection.send_request(
-                            "POST",
-                            f"applications/{self._CONN.app_id}/commands",
-                            json.loads(cmd._jsonify()),
-                        )
-                        # this is pretty redundant but i'm too lazy to change the _jsonify func
-                    else:
-                        connection.send_request("POST", f"applications/{self._CONN.app_id}/guilds/{cmd.private}/commands", json.loads(cmd._jsonify()))  # type: ignore
+                if cmd in synced: continue
+                path: str = f"applications/{self._CONN.app_id}/commands" if cmd.private is None else f"applications/{self._CONN.app_id}/guilds/{cmd.private}/commands"
+                self._CONN.send_request("POST", path, json.loads(cmd._jsonify()))  # type: ignore
 
     def prereq(self, func):
         """This is a decorator to mark a function to be ran during the gateway handshake. The decorated function must not take any arguments.

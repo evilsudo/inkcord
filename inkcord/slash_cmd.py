@@ -28,6 +28,7 @@ class InteractionCommand:
         self.func: Callable | Coroutine | None = func
         self.name = None
         self.desc = None
+        self.private = None
 
     def on_error(self, func: Callable):
         @functools.wraps(func)
@@ -51,10 +52,10 @@ class InteractionCommand:
             pattern.match(self.name)
             if self.name is not None
             else pattern.match(self.func.__name__)
-        )  # pyright: ignore[reportOptionalMemberAccess]
+        )
         if matches is not None:
             raise GeneralException(
-                f"{self.func.__name__ if self.name is None else self.name}._jsonify(): Name of command contains illegal unicode characters (somehow?). Please check if your function name returns a match with the following regex: {pattern.pattern}"
+                f"{self.func.__name__ or self.name}._jsonify(): Name of command contains illegal unicode characters (somehow?). Please check if your function name returns a match with the following regex: {pattern.pattern}"
             )
         dictified = {
             "name": self.name if self.name is not None else self.func.__name__,
@@ -69,11 +70,12 @@ class InteractionCommand:
         sig = inspect.signature(self.func)
         typedict = {str: "STR", int: "INT", float: "FLOAT", bool: "BOOL"}
         # this is for basic types, the other TYPEMAPS one is for extra discord defined types
-        for i in sig.parameters.keys():
+        for i in sig.parameters:
+            if i not in typedict: continue
             l.append(
                 {
                     "name": i,
-                    "description": None,  # this is placeholder for rn, too lazy to add parameter specific descriptions
+                    "description": None,
                     "type": TYPEMAPS._member_map_[
                         typedict[sig.parameters[i].annotation]
                     ],

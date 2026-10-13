@@ -124,7 +124,7 @@ class User:
         """
         request = bot._CONN.send_request("GET", f"users/{id}", None)
         result = json.loads(request.result().read())
-        return self.__init__(result)
+        return User(result)
         # the init is here because just doing self() raised an error
 
     def modify_self(

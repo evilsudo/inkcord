@@ -1,9 +1,24 @@
+from dataclasses import MISSING
 import typing
 import datetime
 from ..resourceid import ResourceID
 from .permissions import PermissionOverwrite, Permissions
 from .user import User
-from ..shared_types import ThreadMetadata
+
+class ThreadMetadata:
+    def __init__(self, _data: dict):
+        self.archived: bool = _data["archived"]
+        """Whether this thread is archived or not."""
+        self.auto_archive_duration: int = _data["auto_archive_duration"]
+        """The duration, in minutes, in which this thread will auto archive itself. Only values this can be are 60,1440,4320, and 10080."""
+        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+            _data["archive_timestamp"]
+        )
+        """The timestamp at which this thread's archive status last changed."""
+        self.locked: bool = _data["locked"]
+        """Whether this thread is locked"""
+        self.invitable: bool | None = _data.get("invitable")
+        """Whether other normal users can add other normal users to this thread."""
 
 
 class Channel:
@@ -21,9 +36,8 @@ class Channel:
     @property
     def guild_id(self) -> ResourceID | None:
         """The ID of the guild that has this channel in it, if applicable."""
-        return (
-            ResourceID(self._data["guild_id"]) if self._data.get("guild_id") else None
-        )
+        if (_id := self._data.get("guild_id")) is not None:
+            return ResourceID(_id)
 
     @property
     def position(self) -> int | None:
@@ -43,9 +57,10 @@ class Channel:
         )
 
     @property
-    def name(self) -> str | None:
-        """The name of this channel. May be None."""
-        return self._data["name"] if self._data.get("name") else None
+    def name(self) -> str | typing.Any:
+        """The name of this channel. Returns MISSING if not found."""
+        return self._data.get("name",MISSING)
+
 
     @property
     def topic(self) -> str | None:
@@ -55,12 +70,8 @@ class Channel:
     @property
     def last_message_id(self) -> ResourceID | None:
         """The most recent message in this channel's ID. May be None, if in a non text channel."""
-        return (
-            ResourceID(self._data["last_message_id"])
-            if self._data.get("last_message_id")
-            else None
-        )
-
+        if (_id := self._data.get("last_message_id")) is not None:
+            return ResourceID(_id)
     @property
     def slowmode(self) -> int | None:
         """The amount of seconds a user/bot has to wait before sending another message. May be None."""
@@ -69,18 +80,15 @@ class Channel:
     @property
     def parent_id(self) -> ResourceID | None:
         """The id of the parent category for a Text Channel, for threads, the id of the text channel this thread was created."""
-        return (
-            ResourceID(self._data["parent_id"]) if self._data.get("parent_id") else None
-        )
+        if (_id := self._data.get("parent_id")) is not None:
+            return ResourceID(_id)
 
     @property
     def last_pin_timestamp(self) -> datetime.datetime | None:
         """A `datetime.datetime` object representing when the last pinned message in this channel was pinned."""
-        return (
-            datetime.datetime.fromisoformat(self._data["last_pin_timestamp"])
-            if self._data.get("last_pin_timestamp")
-            else None
-        )
+        if (_datetime_formatted := self._data.get("last_pin_timestamp")) is not None:
+            return datetime.datetime.fromisoformat(self._data["last_pin_timestamp"])
+
 
     @property
     def message_count(self) -> int | None:
@@ -95,11 +103,8 @@ class Channel:
     @property
     def thread_metadata(self) -> ThreadMetadata | None:
         """Extra Thread Metadata."""
-        return (
-            ThreadMetadata(self._data["thread_metadata"])
-            if self._data.get("thread_metadata")
-            else None
-        )
+        if (_metadata := self._data.get("thread_metadata")) is not None:
+            return ThreadMetadata(_metadata)
 
     @property
     def default_auto_archive_duration(self) -> int | None:
@@ -109,18 +114,35 @@ class Channel:
     @property
     def permissions(self) -> Permissions | None:
         """The permissions for this channel."""
-        return (
-            Permissions(self._data["permissions"])._permissionize()
-            if self._data.get("permissions")
-            else None
-        )
+        if (_perms := self._data.get("permissions")) is not None:
+            return Permissions(_perms)._permissionize()
 
     @property
     def total_messages_all_time(self) -> int | None:
         """The total messages ever sent in this channel. Doesn't decrement whenever a message is deleted, like the `total_messages` field does."""
         return self._data.get("total_message_sent")
 
-    # yes, there are other fields, but I just feel like they are way too useless and too much work to implement
+    # other fields are non-implemented objects
+
+    @property
+    def applied_tags(self) -> list[ResourceID] | None:
+        """All applied tags to this channel."""
+        return [ResourceID(id) for id in self._data["applied_tags"]] if self._data.get("applied_tags") else None
+
+    @property
+    def default_thread_ratelimit(self) -> int | None:
+        """The default ratelimit to put on new created threads in a channel."""
+        return self._data.get("default_thread_rate_limit_per_user")
+
+    @property
+    def default_sort_order(self) -> int | None:
+        """The default sort order type used to order posts inside thread and media channels."""
+        return self._data.get("default_sort_order")
+
+    @property
+    def default_forum_layout(self) -> int | None:
+        """The default forum layout type used to display posts in forum channels."""
+        return self._data.get("default_forum_layout")
 
 
 class DMChannel(Channel):

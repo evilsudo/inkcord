@@ -26,7 +26,6 @@ class Emoji:
             [
                 ResourceID(id)
                 for id in self.__data["roles"]
-                if self.__data["roles"] is not None
             ]
             if self.__data.get("roles")
             else None

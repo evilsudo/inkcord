@@ -123,7 +123,7 @@ class AsyncClient:
         **params,
     ):
         """Lowest level interface in this library to send and recieve the result of a request"""
-        if method == "GET" or method == "DELETE":
+        if method in ["GET","DELETE"]:
             self.loop.run_in_executor(
                 None,
                 self.http_connection.request,
@@ -148,7 +148,7 @@ class AsyncClient:
                     "Reached ratelimit, checking fields for when to send again."
                 )
                 logger.warning(
-                    f"Sending pending request(s) in {jsonified["retry_after"]}s."
+                    f"Sending pending request(s) in {jsonified['retry_after']}s."
                 )
                 self.retry_after = jsonified["retry_after"]
                 self.pending_reqs.append([method, data, route])
@@ -162,7 +162,7 @@ class AsyncClient:
                     "!!! Bot may hit ratelimit soon, remaining requests less than 5. !!! Please remove any unnecessary API calls if you want to prevent this from happening."
                 )
             else:
-                return result_to_check
+                return result_to_check.result()
 
     def get_gateway_url(self):
         url = self.send_request("GET", "gateway", None)
@@ -299,15 +299,11 @@ class AsyncClient:
                             )
                             # here, we need some way to turn the parameter object straight into values that the slash command can use
 
-            except (
-                websockets.exceptions.WebSocketException,
-                websockets.ConnectionClosed,
-            ) as e:
-                if isinstance(e, websockets.exceptions.WebSocketException):
+            except websockets.exceptions.WebSocketException as e:
                     logger.error(
                         f"Encountered an exception when initiating handshake. (starting reconnect...) Error: {e.args}"
                     )
-                if isinstance(e, websockets.ConnectionClosed):
+            except websockets.ConnectionClosed as e:
                     logger.warning(
                         f"Gateway connection was closed with code {e.code}. Running reconnection routine to check whether code is resumable..."
                     )
@@ -317,7 +313,7 @@ class AsyncClient:
         self.num_reconnects += 1
         if self.num_reconnects == 3:
             logger.fatal(
-                f"Tried to reconnect 3 times, failed all of them. Please report this error to the devs by creating an issue with tag `bug-report` at this link: \n https://github.com/sunset-hue/inkcord/issues"
+                "Tried to reconnect 3 times, failed all of them. Please report this error to the devs by creating an issue with tag `bug-report` at this link: \n https://github.com/sunset-hue/inkcord/issues"
             )
         gateway = await websockets.connect(self.resume_url)
         async for data in gateway:

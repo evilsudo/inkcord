@@ -2,13 +2,12 @@ class Embed:
     """A rich embed, that conforms to the structure as defined in the discord API."""
 
     def __init__(self, _data: dict = {}, title: str = ""):
-        "Don't use this, use the `new` constructor."
         self._data = _data
         self.__payloaded = {"fields": [], "title": title}
 
     @classmethod
     def new(cls, title: str):
-        """This function is the user interface to creating an embed."""
+        """This function is the user interface to creating an embed. Use this method instead of initializing normally."""
         return cls(title=title)
 
     def field(self, name: str, content: str, inline: bool = False):

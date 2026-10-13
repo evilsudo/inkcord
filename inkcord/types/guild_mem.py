@@ -1,9 +1,14 @@
 # the user object can't be typehinted here because of circular imports :pensive:
 import datetime
 from ..resourceid import ResourceID
-from ..shared_types import AvatarDecoration
 from .permissions import Permissions
 
+class AvatarDecoration:
+    def __init__(self, _data):
+        self.sku: int = _data["sku_id"]
+        self.asset = (
+            f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"
+        )
 
 class GuildMember:
     """A representation of the guild member model defined by the discord gateway

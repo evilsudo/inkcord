@@ -16,7 +16,7 @@ import enum
 import logging
 
 
-class BitIntents(enum.IntEnum):
+class BitIntents(enum.IntFlag):
     """The class you should use to edit intents.
     + = add a permission
     - = remove a permission
@@ -38,7 +38,20 @@ class BitIntents(enum.IntEnum):
     - `GUILD_MEMBER_ADD/UPDATE/REMOVE` \n
     - `THREAD_MEMBERS_UPDATE`
     """
-    GUILD_MODERATION = 1 << 2
+    GUILD_MODERATION = 1 << 2class ThreadMetadata:
+        def __init__(self, _data: dict):
+            self.archived: bool = _data["archived"]
+            """Whether this thread is archived or not."""
+            self.auto_archive_duration: int = _data["auto_archive_duration"]
+            """The duration, in minutes, in which this thread will auto archive itself. Only values this can be are 60,1440,4320, and 10080."""
+            self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
+                _data["archive_timestamp"]
+            )
+            """The timestamp at which this thread's archive status last changed."""
+            self.locked: bool = _data["locked"]
+            """Whether this thread is locked"""
+            self.invitable: bool | None = _data.get("invitable")
+            """Whether other normal users can add other normal users to this thread."""
     """Adding this allows your bot to recieve: (or send) \n
     - `GUILD_AUDIT_LOG_ENTRY_CREATE` \n
     - `GUILD_BAN_ADD/REMOVE`
@@ -111,13 +124,9 @@ class BitIntents(enum.IntEnum):
     def all(cls, self):  # class method isn't really needed but I want cleaner syntax
         """Returns intents with ALL options enabled (NOT RECOMMENDED)"""
         final = 0
-        for value in BitIntents._value2member_map_.keys():
+        for value in BitIntents._value2member_map_.values():
             final += value
         return final
-
-    @classmethod
-    def default(cls, self):  # returns all privileged intents (that's it)
-        return cls.GUILD_MEMBERS + cls.GUILD_PRESENCES + cls.MESSAGE_CONTENT
 
 
 class RESUMABLE_CLOSE_CODES(enum.IntEnum):
@@ -156,64 +165,6 @@ class TYPEMAPS(enum.Enum):
     ATTACHMENT = 11
 
 
-class AvatarDecoration:
-    def __init__(self, _data):
-        self.sku: int = _data["sku_id"]
-        self.asset = (
-            f"https://cdn.discordapp.com/avatar-decoration-presets/{_data["asset"]}.png"
-        )
-
-
-class WelcomeScreenChannel:
-    def __init__(self, _data):
-        self.channel_id: int = _data["channel_id"]
-        self.description: str = _data["description"]
-
-
-class WelcomeScreen:
-    def __init__(self, _data):
-        self.desc = _data["description"]
-        self.welcome_screen_channels = [
-            WelcomeScreenChannel(data) for data in _data["welcome_channels"]
-        ]
-
-
-class Sticker:
-    def __init__(self, _data):
-        self.id: int = _data["id"]
-        """ID of sticker"""
-        self.pack_id: int | None = _data.get("pack_id")
-        """For builtin stickers, the ID of the pack this sticker is from."""
-        self.name: str = _data["name"]
-        """The name of the sticker."""
-        self.description: str = _data.get("description")
-        """Sticker description. May be None."""
-        self.tags = _data["tags"]
-        """Autocomplete/suggestion tags for the sticker."""
-        self.available: bool | None = _data.get("available")
-        """Whether this sticker can be used, can be False due to server boost level downgrading"""
-        self.guild_id: int | None = _data.get("guild_id")
-        """The guild where this guild id originated from"""
-        self.sort_value: int = _data.get("sort_value")
-        """This sticker's sort order within it's standard pack, if applicable"""
-
-
 class FormatterThreading(logging.Formatter):
     def format(self):
         self._style._fmt = "[ \x1b[38;2;255;128;0m \x1b[3;1m%(name)s-gateway_handler] | %(levelname)s \x1b[0m ~\x1b[38;2;255;217;0m \x1b[4;1m%(asctime)s~: %(message)s"
-
-
-class ThreadMetadata:
-    def __init__(self, _data: dict):
-        self.archived: bool = _data["archived"]
-        """Whether this thread is archived or not."""
-        self.auto_archive_duration: int = _data["auto_archive_duration"]
-        """The duration, in minutes, in which this thread will auto archive itself. Only values this can be are 60,1440,4320, and 10080."""
-        self.archive_timestamp: datetime.datetime = datetime.datetime.fromisoformat(
-            _data["archive_timestamp"]
-        )
-        """The timestamp at which this thread's archive status last changed."""
-        self.locked: bool = _data["locked"]
-        """Whether this thread is locked"""
-        self.invitable: bool | None = _data.get("invitable")
-        """Whether other normal users can add other normal users to this thread."""
